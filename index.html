@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number To Text</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilo opcional para melhor visualização */
+        .descricao {
+            margin-top: 5px;
+            font-style: italic;
+            color: gray;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="card-body">
+            <div class="card-sub">
+                <font size='#000000'><b>Number To Text</b></font>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <!-- Adicionando parágrafos de descrição específicos para cada campo -->
+                            <th align='center'>Sal<br>
+                                <input type='text' class="mantimentos" id="sal" maxlength="9" name='sal' style='width:100px;height:30px;'>
+                                <p id="descricao-sal" class="descricao"></p>
+                            </th>
+                            <th align='center'>Açúcar<br>
+                                <input type='text' class="mantimentos" id="acucar" maxlength="9" name='acucar' style='width:100px;height:30px;'>
+                                <p id="descricao-acucar" class="descricao"></p>
+                            </th>
+                            <th align='center'>Café<br>
+                                <input type='text' class="mantimentos" id="cafe" maxlength="9" name='cafe' style='width:100px;height:30px;'>
+                                <p id="descricao-cafe" class="descricao"></p>
+                            </th>
+                            <th align='center'>Arroz<br>
+                                <input type='text' class="mantimentos" id="arroz" maxlength="9" name='arroz' style='width:100px;height:30px;'>
+                                <p id="descricao-arroz" class="descricao"></p>
+                            </th>
+                            <th align='center'>Outras<br>
+                                <input type='text' class="mantimentos" id="outras" maxlength="9" name='outraskg' style='width:100px;height:30px;'>
+                                <p id="descricao-outras" class="descricao"></p>
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script>
+        // Função para converter números em texto por extenso
+        function numeroPorExtenso(numero) {
+            const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
+            const dezenas = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+            const especiais = ["dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+            const centenas = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+
+            let extenso = '';
+
+            if (numero >= 1000) {
+                const milhares = Math.floor(numero / 1000);
+                extenso += milhares === 1 ? "um mil" : `${numeroPorExtenso(milhares)} mil`;
+                numero %= 1000;
+            }
+
+            if (numero === 100) {
+                extenso += (extenso ? ' e ' : '') + "cem";
+                numero = 0;
+            } else if (numero > 100) {
+                const centena = Math.floor(numero / 100);
+                extenso += (extenso ? ' e ' : '') + centenas[centena];
+                numero %= 100;
+            }
+
+            if (numero >= 20) {
+                const dezena = Math.floor(numero / 10);
+                extenso += (extenso ? ' e ' : '') + dezenas[dezena];
+                numero %= 10;
+            } else if (numero >= 10) {
+                extenso += (extenso ? ' e ' : '') + especiais[numero - 10];
+                numero = 0;
+            }
+
+            if (numero > 0) {
+                extenso += (extenso ? ' e ' : '') + unidades[numero];
+            }
+
+            return extenso || 'zero';
+        }
+
+        // Função para formatar o valor com máscara de milhar e decimal
+        function formatarValor(valor) {
+            valor = valor.replace(/\D/g, ""); // Remove tudo que não for número
+            valor = valor.replace(/^(\d{1,3})(\d{3})(\d{3})$/, "$1.$2,$3"); // Formato para valores acima de 1 milhão
+            valor = valor.replace(/^(\d{1,3})(\d{3})$/, "$1,$2"); // Formato para valores até mil
+            valor = valor.replace(/(\d)(\d{3})$/, "$1.$2"); // Adiciona pontos a cada 3 dígitos
+            return valor;
+        }
+
+        // Função para obter o nome do mantimento com base no ID do campo de entrada
+        function getNomeMantimento(id) {
+            switch (id) {
+                case 'sal':
+                    return 'sal';
+                case 'acucar':
+                    return 'açúcar';
+                case 'cafe':
+                    return 'café';
+                case 'arroz':
+                    return 'arroz';
+                case 'outras':
+                    return 'outros mantimentos';
+                default:
+                    return 'mantimento desconhecida';
+            }
+        }
+
+        // Função que atualiza a descrição da quantidade com base no valor digitado e tipo de Mantimento
+        function atualizarDescricao(input) {
+            let valor = parseInt(input.value.replace(/[.,]/g, ""), 10); // Remove pontos e vírgulas para interpretar o número corretamente
+            let descricao = document.getElementById(`descricao-${input.id}`); // Seleciona o parágrafo de descrição correspondente
+            let textoNumerico = numeroPorExtenso(valor); // Converte o número para texto por extenso
+            let nomeMantimento = getNomeMantimento(input.id); // Obtém o nome da Mantimento com base no ID
+
+            // Define as condições para descrever a quantidade com base no valor inserido
+            if (valor === 1000) {
+                descricao.textContent = `Você digitou um quilo de ${nomeMantimento}`;
+            } else if (valor === 1001) {
+                descricao.textContent = `Você digitou um quilo e um grama de ${nomeMantimento}`;
+            } else if (valor > 1001 && valor < 2000) {
+                const quilos = Math.floor(valor / 1000);
+                const gramas = valor % 1000;
+                let descricaoGramas = gramas > 0 ? ` e ${numeroPorExtenso(gramas)} gramas` : '';
+                descricao.textContent = `Você digitou ${numeroPorExtenso(quilos)} quilo${quilos > 1 ? 's' : ''}${descricaoGramas} de ${nomeMantimento}`;
+            } else if (valor >= 2000 && valor < 1000000) {
+                const quilos = Math.floor(valor / 1000);
+                const gramas = valor % 1000;
+                let descricaoQuilos = `${numeroPorExtenso(quilos)} quilo${quilos > 1 ? 's' : ''}`;
+                let descricaoGramas = gramas > 0 ? ` e ${numeroPorExtenso(gramas)} grama${gramas > 1 ? 's' : ''}` : '';
+                descricao.textContent = `Você digitou ${descricaoQuilos}${descricaoGramas} de ${nomeMantimento}`;
+            } else if (valor >= 1000000 && valor < 100000000) {
+                const toneladas = Math.floor(valor / 1000000);
+                const restante = valor % 1000000;
+                const quilos = Math.floor(restante / 1000);
+                const gramas = restante % 1000;
+                let descricaoToneladas = `${numeroPorExtenso(toneladas)} tonelada${toneladas > 1 ? 's' : ''}`;
+                let descricaoQuilos = quilos > 0 ? ` e ${numeroPorExtenso(quilos)} quilo${quilos > 1 ? 's' : ''}` : '';
+                let descricaoGramas = gramas > 0 ? ` e ${numeroPorExtenso(gramas)} grama${gramas > 1 ? 's' : ''}` : '';
+                descricao.textContent = `Você digitou ${descricaoToneladas}${descricaoQuilos}${descricaoGramas} de ${nomeMantimento}`;
+            } else if (valor == 100000000) {
+                descricao.textContent = `Você digitou cem toneladas de ${nomeMantimento}`;
+            } else if (valor > 100000000) {
+                descricao.textContent = `Você digitou mais de cem toneladas de ${nomeMantimento}`;
+            } else if (valor >= 1000) {
+                descricao.textContent = `${(valor / 1000).toFixed(0).replace('.', ',')} quilo (${textoNumerico} quilos) de ${nomeMantimento}`;
+            } else if (valor > 1) {
+                descricao.textContent = `Você digitou ${textoNumerico} gramas de ${nomeMantimento}`;
+            } else {
+                descricao.textContent = `Você digitou ${textoNumerico} grama de ${nomeMantimento}`;
+            }
+        }
+
+        // Listener para aplicar a máscara e atualizar descrição dinamicamente
+        document.querySelectorAll('.mantimentos').forEach((input) => {
+            input.addEventListener('input', function (e) {
+                e.target.value = formatarValor(e.target.value); // Aplica a formatação de máscara
+                atualizarDescricao(e.target); // Atualiza a descrição com o número e tipo de Mantimento
+            });
+        });
+    </script>
+</body>
+
+</html>
